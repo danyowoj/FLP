@@ -84,5 +84,7 @@
 (print (insert-star-if-non-negative '(-1 0 1 2 -3 4)))
 ; Результат: (-1 * 0 * 1 * 2 -3 * 4)
 
+(insert-star-if '(-1 0 1 2 -3 4) #'(lambda (x) (>= x 0)))
+
 (print (insert-star-if-even '(1 2 3 4 5 6)))
 ; Результат: (1 * 2 3 * 4 5 * 6) 
