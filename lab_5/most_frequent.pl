@@ -1,61 +1,68 @@
-% the main predicate that regulates the operation of the other predicates
 most_frequent(List, MostFrequent) :-
   count_occurrences(List, Counts),
   find_max_count(Counts, MaxCount),
   get_most_frequent(Counts, MaxCount, MostFrequent).
 
 
-% count_occurrences(+List, -Counts)
-% counts the number of occurrences of each item in the list
-% result: list of pairs (Element, Counts)
+% Базовый случай: если список пуст, то список подсчетов тоже пуст.
 count_occurrences([], []).
-% this predicate recursively processes the input list
+% Рекурсивное определение подсчета вхождений.
+% Разбирает список по голове (H) и хвосту (T).
 count_occurrences([H|T], Counts) :-
+  % Рекурсивно обрабатывает хвост списка.
   count_occurrences(T, Counts0),
-  % for each element, it checks if a pair (Element, Counts) 
-  % already exists in the Counts list
+  % Проверяет, существует ли уже пара (H, C) в Counts0. 
+  % Если да (member), оператор ! (cut) предотвращает дальнейшее backtracking, повышая эффективность.
   member((H, C), Counts0), !,
-  % if so, the Counts is increased by 1
+  % Значение C инкрементируется (NewC is C + 1)
   NewC is C + 1,
+  % пара заменяется на (H, NewC) с помощью replace
   replace((H, C), (H, NewC), Counts0, Counts).
+
+% Если пара (H, C) не найдена, добавляет новую пару (H, 1) в начало списка Counts
 count_occurrences([H|T], [(H, 1)|Counts]) :-
   count_occurrences(T, Counts).
 
 
-% replace(+OldPair, +NewPair, +List, -NewList)
-% replace OldPair to NewPair int the List.
+% Заменяет Pair на NewPair в списке
+% Pair находится в начале списка
 replace(Pair, NewPair, [Pair|Rest], [NewPair|Rest]).
-% an auxiliary predicate for replacing an item in the list
-% it is necessary to effectively update the number of occurrences
+
+% Рекурсивная замена Pair на NewPair  в остальной части списка
 replace(Pair, NewPair, [H|T], [H|NewT]) :-
   replace(Pair, NewPair, T, NewT).
 
 
-% find_max_count(+Counts, -MaxCount)
-% find the maximum number of occurrences
-% this predicate recursively finds the maximum number of occurrences among all pairs (Element, Number)
+% Рекурсивно находит максимальное значение количества вхождений
+% Сравнивает текущее количество C с максимальным найденным ранее MaxCount0
 find_max_count([( _, C)|Rest], MaxCount):-
     find_max_count(Rest, MaxCount0),
     (C > MaxCount0 -> MaxCount = C ; MaxCount = MaxCount0).
+
+% Базовый случай:  если список пуст, максимальное количество равно 0
 find_max_count([], 0).
 
 
-% get_most_frequent(+Counts, +MaxCount, -MostFrequent)
-% retrieves the elements with the maximum number of occurrences
+% Базовый случай: если список подсчетов пуст, 
+% список наиболее часто встречающихся элементов пуст
 get_most_frequent([], _, []).
-% this predicate filters the list of pairs (Element, Quantity), 
-% selecting only the elements with the maximum number of occurrences (equal to maxCount)
+
+% Если количество вхождений Count равно максимальному MaxCount, 
+% элемент Element добавляется в список MostFrequent.
 get_most_frequent([(Element, Count)|Rest], MaxCount, [Element|MostFrequent]) :-
   Count = MaxCount,
   get_most_frequent(Rest, MaxCount, MostFrequent).
+
+% Если количество вхождений не равно максимальному, элемент пропускается
 get_most_frequent([( _, _)|Rest], MaxCount, MostFrequent) :-
   get_most_frequent(Rest, MaxCount, MostFrequent).
 
 
 
-% the main predicate for keyboard input and output of the result
+% Предикат для взаимодействия с пользователем
+% Запрашивает ввод списка, вызывает most_frequent и выводит результат
 start :-
 write('Enter a numeric list (e.g. [0,3,5,7,1,5,3,0,3,3,5,7,0,5,0]): '),
-  read(List),  % reads the list from the keyboard (e.g. [0,3,5,7,1,5,3,0,3,3,5,7,0,5,0])
+  read(List),  % пример ввода: [0,3,5,7,1,5,3,0,3,3,5,7,0,5,0]
   most_frequent(List, MostFrequent),
   write('Most frequent elements: '), writeln(MostFrequent).
