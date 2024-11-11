@@ -23,9 +23,11 @@ start :-
         % this is done using the loop exit condition
         % if the entered number N is less than 0, then ! (cut) cuts off the search 
         % for alternative solutions, and fail causes repeat to end
-        (   N < 0 -> !, fail
+        (   N < 0 -> !
         % if N >= 0 than the following part is executed
         ;   fib(N, F), % call function fib to calculate the Fibonacci number
             writef('Число Фибоначчи F(%t) = %t\n', [N, F]), % displays the result
             fail % loop simulation using fail and repeat
-        ).
+        ),!, write('Программа завершена.'), nl, true.
+
+ 
