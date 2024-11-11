@@ -1,21 +1,30 @@
-% define a predicate for printing odd numbers in descending order
+% Определяем предикат для печати нечетных чисел в порядке убывания
 print_odd_numbers(Lower, Upper) :-
-    Upper >= Lower, % check that the upper bound >= the lower one
-    (   Upper mod 2 =:= 0 -> Upper1 is Upper - 1 ; Upper1 is Upper % if Upper is even, decrease by 1
+    Upper >= Lower,  % Проверка, что верхняя граница >= нижней
+    (   Upper mod 2 =:= 0 -> Upper1 is Upper - 1 ; Upper1 is Upper % Если Upper четное, уменьшаем на 1
     ),
-    print_odd(Upper1, Lower). % calling the auxiliary predicate for printing
+    print_odd(Upper1, Lower).  % Вызов вспомогательного предиката для печати
 
-% auxiliary predicate for printing odd numbers
+% Вспомогательный предикат для печати нечетных чисел
 print_odd(Current, Lower) :-
-    Current >= Lower,       % check that the current number >= the lower bound
-    writeln(Current),       % printing the current number
-    Next is Current - 2,    %  moving on to the next odd number
-    print_odd(Next, Lower). % recursively calling the predicate
+    Current >= Lower,  % Проверка, что текущее число >= нижней границы
+    writeln(Current),  % Печать текущего числа
+    Next is Current - 2,  % Переход к следующему нечетному числу
+    print_odd(Next, Lower).  % Рекурсивный вызов предиката
 
-% the initial predicate for running the program
-start :-
-    write('Enter the lower bound: '), flush_output(current_output), % ask the user to enter the lower limit
-    read(Lower), % reading the lower bound
-    write('Enter the upper bound: '), flush_output(current_output), % ask the user to enter the upper limit
-    read(Upper), % reading the upper bound
-    print_odd_numbers(Lower, Upper). % output of odd numbers
+print_odd(Current, Lower) :- 
+    Current < Lower,   % Если текущее число меньше нижней границы, завершить
+    !.  % "Cut" для завершения предиката
+
+% начальный предикат для запуска программы
+start :- 
+    write('Введите нижнюю границу: '), flush_output(current_output), % Запрос у пользователя на ввод нижней границы
+    read(Lower),  % Чтение нижней границы
+    write('Введите верхнюю границу: '), flush_output(current_output), % Запрос у пользователя на ввод верхней границы
+    read(Upper),  % Чтение верхней границы
+    (   Lower > Upper -> 
+        writeln('Ошибка: Нижняя граница больше верхней. Попробуйте снова.'), 
+        start  % Повторный вызов start в случае ошибки
+    ;
+        print_odd_numbers(Lower, Upper)  % Печать нечетных чисел
+    ).
