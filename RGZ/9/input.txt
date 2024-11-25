@@ -1,0 +1,13 @@
+OK then
+Let's test this peace of code
+With some jibberish in the input file
+I will be checking if this works at all
+
+hello
+world
+programming
+algorithm
+python
+example
+science
+jibberish
