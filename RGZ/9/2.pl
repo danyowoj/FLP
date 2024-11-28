@@ -1,51 +1,30 @@
-vowel(a).
-vowel(e).
-vowel(i).
-vowel(o).
-vowel(u).
+:- use_module(library(readutil)).
 
-count_vowels([], 0).
-count_vowels([H|T], Count) :- 
-    (vowel(H) -> count_vowels(T, Count1), Count is Count1 + 1 ; count_vowels(T, Count)).
-
-process_line(Line, WordsWithCounts) :-
-    split_string(Line, " ", "", Words),
-    findall(Word-Count, (member(Word, Words), string_chars(Word, Chars), count_vowels(Chars, Count)), WordsWithCounts).
-
-max_vowel_count([], 0).
-max_vowel_count([_-Count|Tail], MaxCount) :- 
-    max_vowel_count(Tail, TempMax), MaxCount is max(Count, TempMax).
-
-extract_max_vowel_words(WordsWithCounts, MaxCount, MaxWords) :-
-    findall(Word, (member(Word-Count, WordsWithCounts), Count =:= MaxCount), MaxWords).
-
+% Основной предикат
 process_file(InputFile, OutputFile) :-
-    open(InputFile, read, Stream),
-    read_lines(Stream, WordsWithCounts),
-    close(Stream),
-    max_vowel_count(WordsWithCounts, MaxCount),
-    extract_max_vowel_words(WordsWithCounts, MaxCount, MaxWords),
-    open(OutputFile, write, OutStream),
-    write_words(OutStream, MaxWords),
-    close(OutStream).
+    read_file_to_string(InputFile, Content, []),         % Читаем содержимое файла
+    split_string(Content, " \n\t", " \n\t", Words),      % Разбиваем текст на слова
+    findall(Count-Word, (member(Word, Words), count_vowels(Word, Count)), Counts), % Считаем гласные в каждом слове
+    max_vowel_words(Counts, MaxWords),                  % Находим слова с максимальным количеством гласных
+    write_words_to_file(MaxWords, OutputFile).          % Записываем их в новый файл
 
-read_lines(Stream, WordsWithCounts) :- 
-    read_line_to_string(Stream, Line),
-    ( Line \= end_of_file ->
-        process_line(Line, WordsCounts),
-        read_lines(Stream, Rest),
-        append(WordsCounts, Rest, WordsWithCounts)
-    ; 
-        WordsWithCounts = []
-    ).
+% Предикат подсчёта количества гласных в слове
+count_vowels(Word, Count) :-
+    string_chars(Word, Chars),
+    include(is_vowel, Chars, Vowels),
+    length(Vowels, Count).
 
-write_words(_, []).
-write_words(Stream, [Word|T]) :- 
-    format(Stream, '~w~n', [Word]),
-    write_words(Stream, T).
+% Предикат проверки, является ли символ гласным
+is_vowel(Char) :-
+    member(Char, ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U']).
 
-:- initialization(main).
+% Находим слова с максимальным количеством гласных
+max_vowel_words(Counts, MaxWords) :-
+    max_member(MaxCount-_, Counts),                     % Определяем максимальное количество гласных
+    findall(Word, member(MaxCount-Word, Counts), MaxWords).
 
-main :-
-    process_file('input.txt', 'output.txt'),
-    halt.
+% Записываем список слов в файл
+write_words_to_file(Words, OutputFile) :-
+    open(OutputFile, write, Stream),
+    forall(member(Word, Words), writeln(Stream, Word)),
+    close(Stream).
